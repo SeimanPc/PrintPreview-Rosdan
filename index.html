@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PrintPreview Pro — Capas + Textos + PDF</title>
+  <link rel="stylesheet" href="style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <!-- <script type="module" src="js/state.js"></script>
+  <script type="module" src="js/budget.js"></script>
+  <script type="module" src="js/email.js"></script>
+  <script type="module" src="js/export.js"></script>
+  <script type="module" src="js/layer.js"></script>
+  <script type="module" src="js/garment.js"></script> -->
+ 
+</head>
+
+<body>
+
+  <header>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="https://sergiformador.es/sp_cursos/01excel/exercicis/images/logo.svg" alt="Logo"
+        style="width:45px; height:45px; object-fit:contain;">
+      <div>
+        <div class="logo">Print<span>Preview Pro</span></div>
+        <div class="header-sub">
+          <a href="https://sergiformador.es/" target="_blank" rel="noopener">Visita www.sergiformador.es</a>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:0.65rem;">Múltiples capas · Arrastra · Escala</div>
+
+  </header>
+
+  <div class="app">
+
+    <aside class="sidebar">
+      <!-- Vistas -->
+      <div>
+        <div class="section-title">1 · Vista prenda</div>
+        <div class="view-grid" id="view-grid"></div>
+      </div>
+
+      <!-- Colores -->
+      <div>
+        <div class="section-title">2 · Color camiseta</div>
+        <div class="paleta-grid" id="paleta-grid"></div>
+      </div>
+
+      <!-- Capas -->
+      <div>
+        <div class="section-title">3 · Capas (textos/logos)</div>
+        <div class="capas-list" id="capas-list"></div>
+        <button class="btn-agregar" id="btn-add-logo">+ Subir logo</button>
+        <button class="btn-agregar" id="btn-add-texto">+ Añadir texto</button>
+      </div>
+
+    </aside>
+
+    <main class="canvas-area">
+      <div class="canvas-toolbar">
+        <span class="toolbar-hint" id="toolbar-hint">Selecciona una capa para editarla</span>
+        <button class="btn btn-secondary" id="btn-reset-pos">↺ Reset capa</button>
+        <button class="btn btn-secondary" id="btn-export-pdf">📄 Exportar PDF</button>
+        <button class="btn btn-secondary" id="btn-email-image">✉ Enviar imagen</button>
+        <button class="btn btn-accent" id="btn-download">↓ PNG</button>
+      </div>
+      <div class="canvas-wrapper">
+        <div id="canvas-container">
+          <img id="garment-img" src="">
+          <div id="layers-container"></div>
+          <div class="empty-state" id="empty-state">
+            <div>👕 Selecciona una vista</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- PANEL DERECHO -->
+    <aside class="sidebar sidebar-right">
+
+      <!-- Ajustes capa seleccionada -->
+      <div id="layer-settings" style="display:none">
+        <div class="section-title">4 · Ajustes capa</div>
+        <div class="control-row">
+          <div class="control-label"><span>Tamaño</span><span id="layer-val-size">100%</span></div>
+          <input type="range" id="layer-size" min="20" max="250" value="100" step="1">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Pos X</span><span id="layer-val-x">0px</span></div>
+          <input type="range" id="layer-posx" min="-200" max="200" value="0" step="2">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Pos Y</span><span id="layer-val-y">0px</span></div>
+          <input type="range" id="layer-posy" min="-200" max="200" value="0" step="2">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Opacidad</span><span id="layer-val-opacity">100%</span></div>
+          <input type="range" id="layer-opacity" min="10" max="100" value="100" step="1">
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Rotación</span><span id="layer-val-rotation">0°</span></div>
+          <input type="range" id="layer-rotation" min="-180" max="180" value="0" step="1">
+        </div>
+        <div class="control-row">
+          <div class="control-label">Modo fusión</div>
+          <div class="blend-row" id="layer-blend"></div>
+        </div>
+        <div class="control-row">
+          <div class="control-label">Tinte de color</div>
+          <div class="tint-row" id="layer-tint"></div>
+        </div>
+      </div>
+
+      <!-- Solicitud de Presupuesto -->
+      <div>
+        <div class="section-title">5 · Solicitud de presupuesto</div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 6px;">Tipo de estampación</div>
+          <select id="tipo-estampacion"
+            style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.7rem;">
+            <option value="serigrafia_1">Serigrafía 1 color</option>
+            <option value="serigrafia_2">Serigrafía 2 colores</option>
+            <option value="serigrafia_3">Serigrafía 3 colores</option>
+            <option value="serigrafia_4">Serigrafía 4 colores</option>
+            <option value="serigrafia_5">Serigrafía 5 colores</option>
+            <option value="serigrafia_cmyk">Serigrafía en cuatricromía (CMYK)</option>
+            <option value="dtf">DTF (Direct to Film)</option>
+            <option value="sublimacion">Sublimación</option>
+            <option value="bordado">Bordado</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 6px;">Cantidades por talla</div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <div><label style="font-size: 0.65rem;">XS</label><input type="number" id="talla-xs" class="talla-input"
+                value="0" min="0"
+                style="width:100%; padding:4px; border-radius:4px; border:1px solid var(--border); font-size:0.7rem;">
+            </div>
+            <div><label style="font-size: 0.65rem;">S</label><input type="number" id="talla-s" class="talla-input"
+                value="0" min="0"
+                style="width:100%; padding:4px; border-radius:4px; border:1px solid var(--border); font-size:0.7rem;">
+            </div>
+            <div><label style="font-size: 0.65rem;">M</label><input type="number" id="talla-m" class="talla-input"
+                value="0" min="0"
+                style="width:100%; padding:4px; border-radius:4px; border:1px solid var(--border); font-size:0.7rem;">
+            </div>
+            <div><label style="font-size: 0.65rem;">L</label><input type="number" id="talla-l" class="talla-input"
+                value="0" min="0"
+                style="width:100%; padding:4px; border-radius:4px; border:1px solid var(--border); font-size:0.7rem;">
+            </div>
+            <div><label style="font-size: 0.65rem;">XL</label><input type="number" id="talla-xl" class="talla-input"
+                value="0" min="0"
+                style="width:100%; padding:4px; border-radius:4px; border:1px solid var(--border); font-size:0.7rem;">
+            </div>
+            <div><label style="font-size: 0.65rem;">XXL</label><input type="number" id="talla-xxl" class="talla-input"
+                value="0" min="0"
+                style="width:100%; padding:4px; border-radius:4px; border:1px solid var(--border); font-size:0.7rem;">
+            </div>
+          </div>
+          <div style="text-align: right; font-size: 0.7rem; margin-top: 5px;">Total unidades: <span
+              id="total-unidades">0</span></div>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 6px;">Observaciones</div>
+          <textarea id="observaciones" rows="2"
+            style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border); font-size:0.7rem; font-family:inherit;"></textarea>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 6px;">Datos del cliente (opcional)</div>
+          <input type="text" id="cliente-nombre" placeholder="Nombre"
+            style="width:100%; padding:6px; margin-bottom:6px; border-radius:6px; border:1px solid var(--border); font-size:0.7rem;">
+          <input type="email" id="cliente-email" placeholder="Email"
+            style="width:100%; margin-bottom:6px; padding:6px; border-radius:6px; border:1px solid var(--border); font-size:0.7rem;">
+          <input type="tel" id="cliente-telefono" placeholder="Teléfono"
+            style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border); font-size:0.7rem;">
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button id="btn-generar-solicitud" class="btn btn-secondary" style="flex:1;">📄 Generar solicitud</button>
+          <button id="btn-enviar-solicitud" class="btn btn-primary" style="flex:1;">✉ Enviar solicitud</button>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <div class="modal-backdrop" id="modal-texto">
+    <div class="modal">
+      <h3 style="margin-bottom:10px">✏️ Nuevo texto</h3>
+      <input class="form-input" id="texto-contenido" placeholder="Escribe tu texto"
+        style="width:100%;padding:8px;margin-bottom:10px;border:1px solid #ddd;border-radius:6px">
+      <div class="texto-row"><label>Color:</label><input type="color" id="texto-color" value="#000000"></div>
+      <div class="texto-row"><label>Fuente:</label><select id="texto-font">
+          <option value="Arial">Arial</option>
+          <option value="Impact">Impact</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Verdana">Verdana</option>
+          <option value="DM Sans">DM Sans</option>
+        </select></div>
+      <div class="texto-row"><label>Tamaño:</label><input type="range" id="texto-size" min="12" max="80"
+          value="36"><span id="texto-size-val">36px</span></div>
+      <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end">
+        <button class="btn btn-secondary" id="modal-texto-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="modal-texto-ok">Añadir</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Modal envío por email -->
+  <div class="modal-backdrop" id="modal-envio">
+    <div class="modal">
+      <h3 style="margin-bottom:10px">📧 Enviar boceto por email</h3>
+      <div class="form-group">
+        <label class="form-label">Email del destinatario</label>
+        <input class="form-input" id="envio-email" type="email" placeholder="cliente@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Asunto</label>
+        <input class="form-input" id="envio-asunto" type="text" value="Boceto de estampado - PrintPreview">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mensaje</label>
+        <textarea class="form-input" id="envio-mensaje"
+          rows="3">Adjunto encontrarás el boceto de cómo quedaría el estampado en la prenda.</textarea>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end">
+        <button class="btn btn-secondary" id="modal-envio-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="modal-envio-enviar">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
